@@ -6,8 +6,8 @@
 * Unreal Engine version: 4.18.3
 * Created on: 2015/04/26
 *
-* Last Edited on: 2018/03/15
-* Last Edited by: Felipe "Zoc" Silveira
+* Last Edited on: 2020/01/24
+* Last Edited by: iliags
 * 
 * -------------------------------------------------
 * For parts referencing UE4 code, the following copyright applies:
@@ -325,6 +325,7 @@ void UBuoyancyForceComponent::ApplyUprightConstraint(UPrimitiveComponent* BasePr
 			//Attach
 			ConstraintComp->AttachToComponent(BasePrimComp, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 			ConstraintComp->SetConstrainedComponents(BasePrimComp, NAME_None, NULL, NAME_None);
+			ConstraintComp->RegisterComponent();
 		}
 	}
 }
