@@ -19,6 +19,7 @@
 * =================================================*/
 
 #include "OceanManager.h"
+#include "Runtime/Core/Public/Async/ParallelFor.h"
 #include <Engine/World.h>
 #include <Engine/Texture2D.h>
 
@@ -251,46 +252,97 @@ FVector AOceanManager::CalculateGerstnerWaveSetVector(const FVector& position, f
 	if (WaveClusters.Num() <= 0)
 		return sum;
 
-	for (int i = 0; i < WaveClusters.Num(); i++)
+
+	if (bEnableMultithreading)
 	{
-		FWaveSetParameters offsets = FWaveSetParameters();
-		if (WaveSetOffsetsOverride.IsValidIndex(i))
-		{
-			offsets = WaveSetOffsetsOverride[i];
-		}
+		FCriticalSection Mutex;
+		ParallelFor(WaveClusters.Num(), [&](int32 i) {
+			FWaveSetParameters offsets = FWaveSetParameters();
+			if (WaveSetOffsetsOverride.IsValidIndex(i))
+			{
+				offsets = WaveSetOffsetsOverride[i];
+			}
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave01.Rotation, WaveClusters[i].Length * offsets.Wave01.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave01.Amplitude, WaveClusters[i].Steepness * offsets.Wave01.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave01.TimeScale * time, WaveParameterCache[0], CalculateXY, CalculateZ);
+			//Mutex.Lock();
+			//Mutex.Unlock();
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave01.Rotation, WaveClusters[i].Length * offsets.Wave01.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave01.Amplitude, WaveClusters[i].Steepness * offsets.Wave01.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave01.TimeScale * time, WaveParameterCache[0], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave02.Rotation, WaveClusters[i].Length * offsets.Wave02.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave02.Amplitude, WaveClusters[i].Steepness * offsets.Wave02.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave02.TimeScale * time, WaveParameterCache[1], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave02.Rotation, WaveClusters[i].Length * offsets.Wave02.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave02.Amplitude, WaveClusters[i].Steepness * offsets.Wave02.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave02.TimeScale * time, WaveParameterCache[1], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave03.Rotation, WaveClusters[i].Length * offsets.Wave03.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave03.Amplitude, WaveClusters[i].Steepness * offsets.Wave03.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave03.TimeScale * time, WaveParameterCache[2], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave03.Rotation, WaveClusters[i].Length * offsets.Wave03.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave03.Amplitude, WaveClusters[i].Steepness * offsets.Wave03.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave03.TimeScale * time, WaveParameterCache[2], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave04.Rotation, WaveClusters[i].Length * offsets.Wave04.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave04.Amplitude, WaveClusters[i].Steepness * offsets.Wave04.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave04.TimeScale * time, WaveParameterCache[3], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave04.Rotation, WaveClusters[i].Length * offsets.Wave04.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave04.Amplitude, WaveClusters[i].Steepness * offsets.Wave04.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave04.TimeScale * time, WaveParameterCache[3], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave05.Rotation, WaveClusters[i].Length * offsets.Wave05.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave05.Amplitude, WaveClusters[i].Steepness * offsets.Wave05.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave05.TimeScale * time, WaveParameterCache[4], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave05.Rotation, WaveClusters[i].Length * offsets.Wave05.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave05.Amplitude, WaveClusters[i].Steepness * offsets.Wave05.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave05.TimeScale * time, WaveParameterCache[4], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave06.Rotation, WaveClusters[i].Length * offsets.Wave06.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave06.Amplitude, WaveClusters[i].Steepness * offsets.Wave06.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave06.TimeScale * time, WaveParameterCache[5], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave06.Rotation, WaveClusters[i].Length * offsets.Wave06.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave06.Amplitude, WaveClusters[i].Steepness * offsets.Wave06.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave06.TimeScale * time, WaveParameterCache[5], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave07.Rotation, WaveClusters[i].Length * offsets.Wave07.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave07.Amplitude, WaveClusters[i].Steepness * offsets.Wave07.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave07.TimeScale * time, WaveParameterCache[6], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave07.Rotation, WaveClusters[i].Length * offsets.Wave07.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave07.Amplitude, WaveClusters[i].Steepness * offsets.Wave07.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave07.TimeScale * time, WaveParameterCache[6], CalculateXY, CalculateZ);
 
-		sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave08.Rotation, WaveClusters[i].Length * offsets.Wave08.Length,
-			GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave08.Amplitude, WaveClusters[i].Steepness * offsets.Wave08.Steepness, GlobalWaveDirection,
-			position, WaveClusters[i].TimeScale * offsets.Wave08.TimeScale * time, WaveParameterCache[7], CalculateXY, CalculateZ);
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave08.Rotation, WaveClusters[i].Length * offsets.Wave08.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave08.Amplitude, WaveClusters[i].Steepness * offsets.Wave08.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave08.TimeScale * time, WaveParameterCache[7], CalculateXY, CalculateZ);
+		});
 	}
+	else
+	{
+		for (int i = 0; i < WaveClusters.Num(); i++)
+		{
+			FWaveSetParameters offsets = FWaveSetParameters();
+			if (WaveSetOffsetsOverride.IsValidIndex(i))
+			{
+				offsets = WaveSetOffsetsOverride[i];
+			}
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave01.Rotation, WaveClusters[i].Length * offsets.Wave01.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave01.Amplitude, WaveClusters[i].Steepness * offsets.Wave01.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave01.TimeScale * time, WaveParameterCache[0], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave02.Rotation, WaveClusters[i].Length * offsets.Wave02.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave02.Amplitude, WaveClusters[i].Steepness * offsets.Wave02.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave02.TimeScale * time, WaveParameterCache[1], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave03.Rotation, WaveClusters[i].Length * offsets.Wave03.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave03.Amplitude, WaveClusters[i].Steepness * offsets.Wave03.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave03.TimeScale * time, WaveParameterCache[2], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave04.Rotation, WaveClusters[i].Length * offsets.Wave04.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave04.Amplitude, WaveClusters[i].Steepness * offsets.Wave04.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave04.TimeScale * time, WaveParameterCache[3], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave05.Rotation, WaveClusters[i].Length * offsets.Wave05.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave05.Amplitude, WaveClusters[i].Steepness * offsets.Wave05.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave05.TimeScale * time, WaveParameterCache[4], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave06.Rotation, WaveClusters[i].Length * offsets.Wave06.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave06.Amplitude, WaveClusters[i].Steepness * offsets.Wave06.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave06.TimeScale * time, WaveParameterCache[5], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave07.Rotation, WaveClusters[i].Length * offsets.Wave07.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave07.Amplitude, WaveClusters[i].Steepness * offsets.Wave07.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave07.TimeScale * time, WaveParameterCache[6], CalculateXY, CalculateZ);
+
+			sum += CalculateGerstnerWaveVector(WaveClusters[i].Rotation + offsets.Wave08.Rotation, WaveClusters[i].Length * offsets.Wave08.Length,
+				GlobalWaveAmplitude * WaveClusters[i].Amplitude * offsets.Wave08.Amplitude, WaveClusters[i].Steepness * offsets.Wave08.Steepness, GlobalWaveDirection,
+				position, WaveClusters[i].TimeScale * offsets.Wave08.TimeScale * time, WaveParameterCache[7], CalculateXY, CalculateZ);
+		}
+	}
+
+	
 
 // 	// Calculate the Gerstner Waves
 // 	sum += CalculateGerstnerWaveVector(global.Rotation + ws.Wave01.Rotation, global.Length * ws.Wave01.Length,

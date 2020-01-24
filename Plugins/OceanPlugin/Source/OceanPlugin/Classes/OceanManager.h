@@ -136,6 +136,10 @@ class OCEANPLUGIN_API AOceanManager : public AActor
 
 public:
 
+	// Experimental, may cause issues
+	UPROPERTY(Category = "Ocean", BlueprintReadWrite, EditAnywhere)
+		bool bEnableMultithreading = false;
+
 	UPROPERTY(Category = "Ocean", BlueprintReadWrite, EditAnywhere)
 	bool EnableGerstnerWaves;
 
